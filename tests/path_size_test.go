@@ -29,3 +29,13 @@ func TestGetPathSizeOfNotExistsFile(t *testing.T) {
 	_, err := code.GetPathSize("../testdata/random", false, false, false)
 	require.EqualError(t, err, "failed to get file info: no such file or directory")
 }
+
+func TestGetDirSizeWithoutHiddenFiles(t *testing.T) {
+	dirSize, _ := code.GetPathSize("../testdata/directory1", false, false, false)
+	require.Equal(t, "39B\tdirectory1", dirSize, "size not without hidden files")
+}
+
+func TestGetDirSizeWithHiddenFiles(t *testing.T) {
+	dirSize, _ := code.GetPathSize("../testdata/directory1", false, false, true)
+	require.Equal(t, "52B\tdirectory1", dirSize, "size not without hidden files")
+}

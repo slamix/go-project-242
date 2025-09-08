@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var units []string = []string{"B", "KB", "MB", "GB", "TB", "PB", "EB"}
@@ -28,10 +29,22 @@ func GetPathSize(path string, recursive, human, all bool) (string, error) {
 	}
 
 	var filesSize int64
-	for _, entry := range entries {
-		dataInfo, err := entry.Info()
-		if err == nil && !dataInfo.IsDir() {
-			filesSize += dataInfo.Size()
+	if all {
+		for _, entry := range entries {
+			dataInfo, err := entry.Info()
+			if err == nil && !dataInfo.IsDir() {
+				filesSize += dataInfo.Size()
+			}
+		}
+	} else {
+		for _, entry := range entries {
+			dataInfo, err := entry.Info()
+			if err == nil && !dataInfo.IsDir() {
+				name := dataInfo.Name()
+				if !strings.HasPrefix(name, ".") {
+					filesSize += dataInfo.Size()
+				}
+			}
 		}
 	}
 	formattedSize := FormatSize(filesSize, human)
