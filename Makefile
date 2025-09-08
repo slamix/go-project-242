@@ -1,5 +1,5 @@
 build:
-	go build cmd/hexlet-path-size/main.go
+	go build -o bin/hexlet-path-size ./cmd/hexlet-path-size
 
 lint:
 	golangci-lint run .
