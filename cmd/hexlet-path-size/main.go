@@ -21,13 +21,11 @@ func main() {
 			}
 
 			path := args[0]
-
 			res, err := code.GetPathSize(path, false, false, false)
 			if err != nil {
 				return err
 			}
 			fmt.Println(res)
-
 			return nil
 		},
 	}
