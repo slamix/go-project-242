@@ -6,18 +6,19 @@ import (
 	"path/filepath"
 )
 
+var units []string = []string{"B", "KB", "MB", "GB", "TB", "PB", "EB"}
+
 func GetPathSize(path string, recursive, human, all bool) (string, error) {
-	fullPath, err := filepath.Abs(path)
-	if err != nil {
-		return "", fmt.Errorf("failed to get absolute path: %w", err)
-	}
+	fullPath, _ := filepath.Abs(path)
 	dataInfo, err := os.Lstat(fullPath)
 	if err != nil {
 		return "", fmt.Errorf("failed to get file info: no such file or directory")
 	}
 
+	var res string
 	if !dataInfo.IsDir() {
-		res := fmt.Sprintf("%dB\t%s", dataInfo.Size(), dataInfo.Name())
+		fileSize := FormatSize(dataInfo.Size(), human)
+		res = fmt.Sprintf("%s\t%s", fileSize, dataInfo.Name())
 		return res, nil
 	}
 
@@ -33,7 +34,21 @@ func GetPathSize(path string, recursive, human, all bool) (string, error) {
 			filesSize += dataInfo.Size()
 		}
 	}
-
-	res := fmt.Sprintf("%dB\t%s", filesSize, dataInfo.Name())
+	formattedSize := FormatSize(filesSize, human)
+	res = fmt.Sprintf("%s\t%s", formattedSize, dataInfo.Name())
 	return res, nil
+}
+
+func FormatSize(size int64, human bool) string {
+	if !human {
+		return fmt.Sprintf("%dB", size)
+	}
+	unitIdx := 0
+	var finalSize float64 = float64(size)
+	for finalSize >= 1024 && unitIdx < len(units) {
+		finalSize /= 1024
+		unitIdx += 1
+	}
+	formattedSize := fmt.Sprintf("%.1f%s", finalSize, units[unitIdx])
+	return formattedSize
 }
