@@ -10,45 +10,19 @@ import (
 var units []string = []string{"B", "KB", "MB", "GB", "TB", "PB", "EB"}
 
 func GetPathSize(path string, recursive, human, all bool) (string, error) {
-	fullPath, _ := filepath.Abs(path)
-	dataInfo, err := os.Lstat(fullPath)
-	if err != nil {
-		return "", fmt.Errorf("failed to get file info: no such file or directory")
+	fullPath, pathErr := filepath.Abs(path)
+	if pathErr != nil {
+		return "", fmt.Errorf("error")
 	}
 
 	var res string
-	if !dataInfo.IsDir() {
-		fileSize := FormatSize(dataInfo.Size(), human)
-		res = fmt.Sprintf("%s\t%s", fileSize, dataInfo.Name())
-		return res, nil
+	finalSize, err := GetSize(fullPath, recursive, all)
+	if err != nil {
+		return "", fmt.Errorf("error: %w", err)
 	}
 
-	entries, dirErr := os.ReadDir(fullPath)
-	if dirErr != nil {
-		return "", fmt.Errorf("failed to get directory info: %w", dirErr)
-	}
-
-	var filesSize int64
-	if all {
-		for _, entry := range entries {
-			dataInfo, err := entry.Info()
-			if err == nil && !dataInfo.IsDir() {
-				filesSize += dataInfo.Size()
-			}
-		}
-	} else {
-		for _, entry := range entries {
-			dataInfo, err := entry.Info()
-			if err == nil && !dataInfo.IsDir() {
-				name := dataInfo.Name()
-				if !strings.HasPrefix(name, ".") {
-					filesSize += dataInfo.Size()
-				}
-			}
-		}
-	}
-	formattedSize := FormatSize(filesSize, human)
-	res = fmt.Sprintf("%s\t%s", formattedSize, dataInfo.Name())
+	formattedSize := FormatSize(finalSize, human)
+	res = fmt.Sprintf("%s\t%s", formattedSize, path)
 	return res, nil
 }
 
@@ -64,4 +38,33 @@ func FormatSize(size int64, human bool) string {
 	}
 	formattedSize := fmt.Sprintf("%.1f%s", finalSize, units[unitIdx])
 	return formattedSize
+}
+
+func GetSize(path string, recursive, all bool) (int64, error) {
+	dataInfo, err := os.Lstat(path)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get file/directory info: no such file or directory")
+	}
+
+	if !all && strings.HasPrefix(dataInfo.Name(), ".") {
+		return 0, nil
+	}
+
+	if !dataInfo.IsDir() {
+		return dataInfo.Size(), nil
+	}
+
+	var totalSize int64
+	entries, _ := os.ReadDir(path)
+	for _, entry := range entries {
+		if !recursive && entry.IsDir() {
+			continue
+		}
+		size, err := GetSize(filepath.Join(path, entry.Name()), recursive, all)
+		if err != nil {
+			return 0, fmt.Errorf("error: %w", err)
+		}
+		totalSize += size
+	}
+	return totalSize, nil
 }
