@@ -29,7 +29,7 @@ func FormatSize(size int64, human bool) string {
 		return fmt.Sprintf("%dB", size)
 	}
 	unitIdx := 0
-	var finalSize float64 = float64(size)
+	finalSize := float64(size)
 	for finalSize >= 1024 && unitIdx < len(units) {
 		finalSize /= 1024
 		unitIdx += 1
