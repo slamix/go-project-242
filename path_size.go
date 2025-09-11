@@ -25,7 +25,7 @@ func GetPathSize(path string, recursive, human, all bool) (string, error) {
 }
 
 func FormatSize(size int64, human bool) string {
-	if !human {
+	if !human || size < 1024 {
 		return fmt.Sprintf("%dB", size)
 	}
 	unitIdx := 0
