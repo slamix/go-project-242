@@ -1,7 +1,7 @@
 package tests
 
 import (
-	code "code"
+	"code"
 	"testing"
 
 	"github.com/stretchr/testify/require"
