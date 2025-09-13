@@ -7,27 +7,27 @@ import (
 	"strings"
 )
 
-var units []string = []string{"B", "KB", "MB", "GB", "TB", "PB", "EB"}
-
 func GetPathSize(path string, recursive, human, all bool) (string, error) {
 	fullPath, pathErr := filepath.Abs(path)
 	if pathErr != nil {
-		return "", fmt.Errorf("error")
+		return "", fmt.Errorf("error: %w", pathErr)
 	}
 
-	finalSize, err := GetSize(fullPath, recursive, all)
+	finalSize, err := getSize(fullPath, recursive, all)
 	if err != nil {
 		return "", fmt.Errorf("error: %w", err)
 	}
 
-	formattedSize := FormatSize(finalSize, human)
+	formattedSize := formatSize(finalSize, human)
 	return formattedSize, nil
 }
 
-func FormatSize(size int64, human bool) string {
+func formatSize(size int64, human bool) string {
 	if !human || size < 1024 {
 		return fmt.Sprintf("%dB", size)
 	}
+
+	var units []string = []string{"B", "KB", "MB", "GB", "TB", "PB", "EB"}
 	unitIdx := 0
 	finalSize := float64(size)
 	for finalSize >= 1024 && unitIdx < len(units) {
@@ -38,7 +38,7 @@ func FormatSize(size int64, human bool) string {
 	return formattedSize
 }
 
-func GetSize(path string, recursive, all bool) (int64, error) {
+func getSize(path string, recursive, all bool) (int64, error) {
 	dataInfo, err := os.Lstat(path)
 	if err != nil {
 		return 0, fmt.Errorf("failed to get file/directory info: no such file or directory")
@@ -53,12 +53,15 @@ func GetSize(path string, recursive, all bool) (int64, error) {
 	}
 
 	var totalSize int64
-	entries, _ := os.ReadDir(path)
+	entries, dirErr := os.ReadDir(path)
+	if dirErr != nil {
+		return 0, fmt.Errorf("can't read directory: %w", dirErr)
+	}
 	for _, entry := range entries {
 		if !recursive && entry.IsDir() {
 			continue
 		}
-		size, err := GetSize(filepath.Join(path, entry.Name()), recursive, all)
+		size, err := getSize(filepath.Join(path, entry.Name()), recursive, all)
 		if err != nil {
 			return 0, fmt.Errorf("error: %w", err)
 		}

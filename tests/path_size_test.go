@@ -19,7 +19,7 @@ func TestGetPathSizeOfDirectory(t *testing.T) {
 	require.Equal(t, "39B", directorySize, "Wrong directory size")
 }
 
-func TestGetPatSizeOfEmptyDirectory(t *testing.T) {
+func TestGetPathSizeOfEmptyDirectory(t *testing.T) {
 	emptyDirSize, err := code.GetPathSize("../testdata/emptydir", false, false, false)
 	require.NoError(t, err, "Directory exists, but error was returned")
 	require.Equal(t, "0B", emptyDirSize, "Size is not 0")
@@ -40,9 +40,9 @@ func TestGetDirSizeWithHiddenFiles(t *testing.T) {
 	require.Equal(t, "52B", dirSize, "size not without hidden files")
 }
 
-func TestGetDirSizeWithRecursiveAndHidden(t *testing.T) {
-	dirSize, _ := code.GetPathSize("../testdata", true, false, true)
-	require.Equal(t, "6213B", dirSize, "wrong size with recursive and hidden flags")
+func TestGetDirHumanSizeWithRecursiveAndHidden(t *testing.T) {
+	dirSize, _ := code.GetPathSize("../testdata", true, true, true)
+	require.Equal(t, "6.1KB", dirSize, "wrong size with recursive and hidden flags")
 }
 
 func TestGetDirSizeWithoutRecursiveAndHidden(t *testing.T) {
