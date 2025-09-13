@@ -27,7 +27,7 @@ func formatSize(size int64, human bool) string {
 		return fmt.Sprintf("%dB", size)
 	}
 
-	var units []string = []string{"B", "KB", "MB", "GB", "TB", "PB", "EB"}
+	units := []string{"B", "KB", "MB", "GB", "TB", "PB", "EB"}
 	unitIdx := 0
 	finalSize := float64(size)
 	for finalSize >= 1024 && unitIdx < len(units) {
